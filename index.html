@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maqueta Estepa Mongola</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #e8e6e1;
+    background: radial-gradient(ellipse at 50% 20%, #34373d, #17181b 70%); display: flex; justify-content: center; padding: 32px 16px; }
+  main { width: 100%; max-width: 760px; }
+  header { text-align: center; margin-bottom: 26px; }
+  header img { height: 120px; width: auto; }
+  h1 { margin: 10px 0 4px; font-size: 28px; color: #f0c36a; letter-spacing: .3px; }
+  header p { margin: 0; color: #9a9890; font-size: 14px; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  a.card { display: flex; gap: 14px; align-items: center; padding: 16px; text-decoration: none; color: inherit;
+    background: rgba(24, 26, 30, .86); border: 1px solid rgba(255, 255, 255, .12); border-radius: 14px; transition: border-color .15s, transform .15s; }
+  a.card:hover { border-color: rgba(240, 195, 106, .7); transform: translateY(-2px); }
+  a.card.main { grid-column: 1 / -1; border-color: rgba(240, 195, 106, .45); }
+  .ico { font-size: 30px; width: 40px; text-align: center; }
+  .name { display: block; font-weight: 700; font-size: 16px; color: #fff; }
+  .sub { display: block; margin-top: 2px; font-size: 12.5px; color: #9a9890; line-height: 1.4; }
+  footer { margin-top: 26px; text-align: center; font-size: 12px; color: #8a8880; line-height: 1.7; }
+  footer a { color: #f0c36a; }
+  footer img { height: 34px; vertical-align: middle; margin: 0 6px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="assets/logos/Mixtle_Arch.svg" alt="Mixtle" onerror="this.style.display='none'">
+    <h1>Maqueta Estepa Mongola</h1>
+    <p>Modelos 3D interactivos de una maqueta de palillos de madera.<br>Elige un modelo para abrirlo.</p>
+  </header>
+
+  <div class="grid">
+    <a class="card main" href="Maqueta_Palillos/paisaje_clan.html"><span class="ico">🏞</span><span><span class="name">Paisaje del clan</span><span class="sub">Río serpenteante, puente con quiosco, centro de reunión y viviendas. Con momentos del día.</span></span></a>
+    <a class="card" href="Maqueta_Palillos/palillos_espiral_aurea.html"><span class="ico">🌀</span><span><span class="name">Centro áureo</span><span class="sub">Espiral de Fibonacci con mástil dorado.</span></span></a>
+    <a class="card" href="Maqueta_Palillos/puente/puente_davinci_v3.html"><span class="ico">🌉</span><span><span class="name">Puente de Leonardo</span><span class="sub">Puente autosustentable de palillos.</span></span></a>
+    <a class="card" href="Maqueta_Palillos/conector_tetradecaedro.html"><span class="ico">⬡</span><span><span class="name">Conector tetradecaedro</span><span class="sub">Nodo con conductos para palillos (impreso en 3D).</span></span></a>
+    <a class="card" href="Maqueta_Palillos/quiosco_hexagonal.html"><span class="ico">🛖</span><span><span class="name">Quiosco hexagonal</span><span class="sub">Esqueleto con tejado y observatorio.</span></span></a>
+    <a class="card" href="Guia_de_uso.pdf"><span class="ico">📄</span><span><span class="name">Guía de uso (PDF)</span><span class="sub">Dónde pulsar y qué hace cada control.</span></span></a>
+  </div>
+
+  <footer>
+    <img src="assets/logos/PC_IEDEP.svg" alt="IEDEP" onerror="this.style.display='none'"><img src="assets/logos/Arch_Ram.svg" alt="Arch_Ramon" onerror="this.style.display='none'"><br>
+    Instituto de Educación Digital del Estado de Puebla · Diseño Arquitectónico<br>
+    Ramón Cisneros Montero · Profesora: Arq. Claudia Carmen Zárate Herrera
+  </footer>
+</main>
+</body>
+</html>

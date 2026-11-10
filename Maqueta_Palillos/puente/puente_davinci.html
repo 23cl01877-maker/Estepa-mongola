@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puente Da Vinci de palillos</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1c1e22; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  canvas { display: block; }
+  #panel {
+    position: fixed; top: 16px; left: 16px; width: 290px; max-height: calc(100% - 32px); overflow-y: auto; padding: 16px 18px 18px;
+    background: rgba(24, 26, 30, .84); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, .12); border-radius: 14px; color: #e8e6e1;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  }
+  #panel h1 { font-size: 15px; margin: 0 0 2px; color: #f0c36a; letter-spacing: .3px; }
+  #panel p.sub { margin: 0 0 14px; font-size: 11.5px; color: #9a9890; }
+  .row { margin-bottom: 13px; }
+  .row label { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; }
+  .row label output { color: #f0c36a; font-variant-numeric: tabular-nums; }
+  fieldset.box { margin: 0 0 14px; padding: 10px 12px 2px; border: 1px solid rgba(240,195,106,.45); border-radius: 10px; }
+  fieldset.box legend { padding: 0 6px; font-size: 12px; color: #f0c36a; }
+  .secGrid { display: grid; grid-template-columns: 1fr 26px; grid-template-rows: 110px auto; gap: 6px 8px; align-items: center; margin-bottom: 6px; }
+  #secSvg { width: 100%; height: 110px; display: block; background: rgba(255,255,255,.04); border-radius: 8px; }
+  input.vert { writing-mode: vertical-lr; direction: rtl; width: 22px; height: 110px; margin: 0 auto; }
+  input.horiz { grid-column: 1; width: 100%; margin: 0; }
+  .secVals { font-size: 12px; text-align: center; color: #f0c36a; margin-bottom: 12px; font-variant-numeric: tabular-nums; }
+  [hidden] { display: none !important; }
+  .hint { font-size: 10.5px; color: #8a8880; margin-top: 4px; line-height: 1.35; }
+  input[type=range] { width: 100%; accent-color: #e0a040; }
+  select, button {
+    width: 100%; padding: 9px 10px; font: inherit; font-size: 13px; color: #e8e6e1;
+    background: #2c2f35; border: 1px solid rgba(255, 255, 255, .15); border-radius: 8px;
+  }
+  button { cursor: pointer; background: #b9822c; border-color: #d9a24c; color: #1a1408; font-weight: 600; transition: background .15s; }
+  button.sec { background: #2c2f35; color: #e8e6e1; border-color: rgba(255,255,255,.2); font-weight: 500; margin-top: 8px; }
+  button:hover { background: #d19a42; }
+  button.sec:hover { background: #3a3e46; }
+  button:disabled { opacity: .6; cursor: progress; }
+  #info { margin-top: 12px; font-size: 12px; color: #b9b7b0; line-height: 1.6; min-height: 60px; }
+  #info b { color: #f0c36a; font-weight: 600; }
+  @media (max-width: 520px) { #panel { width: calc(100% - 24px); left: 12px; top: 12px; max-height: 55%; } }
+
+  /* ---- Acerca de (compartido) ---- */
+  #abBtn { position: fixed; top: 16px; right: 16px; z-index: 40; display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px;
+    background: rgba(24,26,30,.84); backdrop-filter: blur(8px); color: #f0c36a; font: 600 12.5px system-ui, -apple-system, "Segoe UI", sans-serif;
+    border: 1px solid rgba(255,255,255,.12); border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+  #abBtn:hover { background: rgba(48,50,56,.95); }
+  #abBtn img { height: 22px; width: auto; display: block; }
+  #abModal { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px;
+    background: rgba(0,0,0,.65); backdrop-filter: blur(4px); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #abModal.open { display: flex; }
+  #abCard { position: relative; width: 100%; max-width: 440px; max-height: 92vh; overflow-y: auto; padding: 20px 22px 18px; color: #e8e6e1;
+    background: #1f2125; border: 1px solid rgba(240,195,106,.45); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+  #abCard h2 { margin: 0; font-size: 16px; color: #f0c36a; }
+  #abCard .ab-sub { margin: 2px 0 0; font-size: 12px; color: #9a9890; }
+  #abClose { position: absolute; top: 10px; right: 12px; background: none; border: 0; color: #f0c36a; font-size: 18px; cursor: pointer; }
+  .ab-head { padding-right: 26px; display: flex; align-items: center; gap: 12px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(240,195,106,.3); }
+  .ab-head img { height: 44px; width: auto; background: #17181b; padding: 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,.1); }
+  .ab-logos { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 12px; padding: 10px; background: #17181b; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); }
+  .ab-logos img { height: 52px; width: auto; max-width: 48%; object-fit: contain; }
+  .ab-grid { display: grid; gap: 8px; font-size: 12px; }
+  .ab-grid.two { grid-template-columns: 1fr 1fr; }
+  .ab-item { padding: 8px 10px; background: #17181b; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; }
+  .ab-item span.k { display: block; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #e0a040; font-weight: 700; margin-bottom: 2px; }
+  .ab-item span.v { color: #fff; font-weight: 600; }
+  .ab-item span.s { display: block; color: #9a9890; font-size: 11px; margin-top: 1px; }
+  #abOk { margin-top: 14px; float: right; padding: 8px 18px; font-weight: 600; font-size: 12.5px; font-family: inherit; color: #1a1408; background: #b9822c; border: 1px solid #d9a24c; border-radius: 8px; cursor: pointer; }
+  #abOk:hover { background: #d19a42; }
+  #abBtn, #abClose, #abOk { width: auto; margin-left: 0; }
+  #abClose { padding: 2px 6px; background: none; border: 0; line-height: 1; }
+  #abClose:hover { background: none; color: #fff; }
+  @media (max-width: 520px) { #abBtn span { display: none; } }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<div id="panel">
+  <h1>Puente autosustentable Da Vinci</h1>
+  <p class="sub">Cada eslabón = 3 rieles (hileras izq · centro · der) + travesaños de enlace.</p>
+
+  <div class="row">
+    <label for="links">Eslabones <output id="linksOut">3</output></label>
+    <input id="links" type="range" min="3" max="15" step="1" value="3">
+    <div class="hint">Rieles = 3 × eslabones; travesaños = eslabones + 1.</div>
+  </div>
+  <fieldset class="box">
+    <legend>Sección transversal del palito</legend>
+    <div class="row">
+      <label for="shape">Forma</label>
+      <select id="shape">
+        <option value="rect">Rectangular (palo de helado)</option>
+        <option value="round">Circular (palillo)</option>
+      </select>
+    </div>
+    <div class="secGrid">
+      <svg id="secSvg" viewBox="0 0 120 100" aria-label="Vista de la sección"></svg>
+      <input id="thk" class="vert" type="range" min="1" max="25" step="0.5" value="3" aria-label="Grosor (mm)">
+      <input id="wid" class="horiz" type="range" min="1" max="25" step="0.5" value="10" aria-label="Ancho (mm)">
+      <input id="dia" class="horiz" type="range" min="1" max="25" step="0.5" value="4" aria-label="Diámetro (mm)" hidden>
+    </div>
+    <div id="secVals" class="secVals"></div>
+  </fieldset>
+  <div class="row">
+    <label for="len">Largo del palito <output id="lenOut">11.0 cm</output></label>
+    <input id="len" type="range" min="5" max="20" step="0.5" value="11">
+  </div>
+  <div class="row">
+    <label for="joint">Unión</label>
+    <select id="joint">
+      <option value="smooth">Lisos (apoyo por fricción)</option>
+      <option value="notch">Con muescas (encastrados)</option>
+    </select>
+  </div>
+  <button id="build">Construir Paso a Paso</button>
+  <button id="frame" class="sec">Encuadrar puente</button>
+  <div id="info"></div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* Escala: 1 unidad de escena = 1 cm */
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const SWEEP = THREE.MathUtils.degToRad(80);   // ángulo total del arco
+const SPAN_RATIO = 0.7;                        // cuerda entre travesaños = 0.7·L (los rieles sobresalen un 15 % por extremo)
+
+/* ---------- Renderer / escena / cámara ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.05, 2000);
+camera.position.set(22, 14, 22);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.minDistance = 2;
+controls.maxDistance = 500;
+
+/* ---------- Fondo gris oscuro texturizado ---------- */
+(function () {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(256, 200, 40, 256, 256, 400);
+  grad.addColorStop(0, '#34373d'); grad.addColorStop(1, '#17181b');
+  g.fillStyle = grad; g.fillRect(0, 0, 512, 512);
+  const img = g.getImageData(0, 0, 512, 512);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const n = (Math.random() - 0.5) * 14;
+    img.data[i] += n; img.data[i + 1] += n; img.data[i + 2] += n;
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  scene.background = t;
+})();
+
+/* ---------- Luces ---------- */
+scene.add(new THREE.HemisphereLight(0xfff2e0, 0x3a3c41, 0.9));
+const sun = new THREE.DirectionalLight(0xffd9a0, 2.6);
+sun.position.set(30, 50, 22);
+sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096);
+Object.assign(sun.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 5, far: 150 });
+sun.shadow.bias = -0.0003;
+sun.shadow.normalBias = 0.01;
+sun.shadow.radius = 3;
+scene.add(sun);
+
+/* ---------- Suelo y rejilla (1 celda = 1 cm) ---------- */
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(600, 600),
+  new THREE.MeshStandardMaterial({ color: 0x3a3c41, roughness: 0.95 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+const grid = new THREE.GridHelper(200, 200, 0x6b6e75, 0x4a4d53);
+grid.position.y = 0.004;
+grid.material.transparent = true; grid.material.opacity = 0.5;
+scene.add(grid);
+
+/* ---------- Textura de madera (persistente) ---------- */
+const woodTexture = (function () {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#c99d63'; g.fillRect(0, 0, 128, 512);
+  for (let i = 0; i < 70; i++) {
+    const x0 = Math.random() * 128, dark = Math.random() < 0.7;
+    g.strokeStyle = dark ? `rgba(95,58,25,${0.08 + Math.random() * 0.2})` : `rgba(235,205,150,${0.1 + Math.random() * 0.15})`;
+    g.lineWidth = 0.6 + Math.random() * 2;
+    g.beginPath(); g.moveTo(x0, 0);
+    for (let y = 0; y <= 512; y += 32) g.lineTo(x0 + Math.sin(y * 0.02 + i) * 3, y);
+    g.stroke();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+  return t;
+})();
+
+/* ---------- Geometría del puente ---------- */
+/**
+ * N eslabones sobre un arco circular con N+1 travesaños M_0..M_N (palitos en dirección del ancho, eje Z).
+ * Eslabón i = 3 rieles, uno por hilera (izquierda, centro, derecha), que unen M_i con M_{i+1}.
+ * Los rieles de una misma hilera van uno tras otro y alternan por encima / por debajo de los
+ * travesaños (pares arriba, impares abajo): cada travesaño queda "sandwich" entre dos rieles
+ * consecutivos y ningún riel cruza a otro, así que no hay solapes.
+ * Devuelve piezas {c, u, v, role, markers}: centro, eje largo y dirección del grosor.
+ */
+function layout({ N, L, a, th, notch }) {
+  const off = th * (notch ? 0.5 : 1);               // separación entre ejes en cada cruce
+  const D = SWEEP / N;
+  const s = SPAN_RATIO * L;                         // cuerda entre travesaños consecutivos
+  const R = s / (2 * Math.sin(D / 2));
+  const phi = k => -SWEEP / 2 + k * D;
+  const C = k => V3(R * Math.sin(phi(k)), R * Math.cos(phi(k)), 0);
+  const yShift = Math.max(th / 2 - C(0).y, off + th / 2 - C(1).y);   // apoyos y rieles inferiores sobre el suelo
+  const lane = Math.min(L / 2 - a / 2, Math.max(0.3 * L, 1.2 * a)); // separación de las hileras
+  const lanes = [-lane, 0, lane];
+  const sticks = [];
+  const travesano = k => {
+    const c = C(k); c.y += yShift;
+    return { c, u: V3(0, 0, 1), v: V3(Math.sin(phi(k)), Math.cos(phi(k)), 0), role: 'M', link: k };
+  };
+  sticks.push(travesano(0));
+  for (let i = 0; i < N; i++) {
+    const A = C(i), B = C(i + 1);
+    const u = B.clone().sub(A).normalize();
+    const nn = V3(-u.y, u.x, 0);
+    const sg = i % 2 === 0 ? 1 : -1;               // pares por encima, impares por debajo
+    for (const z of lanes) {
+      const mid = A.clone().add(B).multiplyScalar(0.5).addScaledVector(nn, sg * off);
+      mid.y += yShift; mid.z = z;
+      const markers = [];
+      if (notch) for (const P of [A, B]) {
+        const p = P.clone().addScaledVector(nn, sg * off / 2); p.y += yShift; p.z = z;
+        markers.push({ c: p, v: nn.clone() });
+      }
+      sticks.push({ c: mid, u: u.clone(), v: nn.clone(), role: 'R', link: i, markers });
+    }
+    sticks.push(travesano(i + 1));
+  }
+  return { sticks, R, D };
+}
+
+/* ---------- Estructura dinámica ---------- */
+const structure = new THREE.Group();
+scene.add(structure);
+const ui = Object.fromEntries(['links', 'len', 'wid', 'thk', 'dia', 'shape', 'joint', 'build', 'frame', 'info']
+  .map(id => [id, document.getElementById(id)]));
+const outs = { links: 'linksOut', len: 'lenOut', wid: 'widOut', thk: 'thkOut' };
+let timer = null;
+
+function clearStructure() {
+  if (timer !== null) { clearInterval(timer); timer = null; }
+  ui.build.disabled = false;
+  for (const obj of [...structure.children]) {
+    structure.remove(obj);
+    obj.geometry?.dispose();
+    (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach(m => m?.dispose());
+  }
+}
+
+function basisQuat(x, y, z) {
+  return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+}
+
+function readParams() {
+  const round = ui.shape.value === 'round';
+  const th = (round ? +ui.dia.value : +ui.thk.value) / 10;        // mm -> cm
+  return {
+    N: +ui.links.value, L: +ui.len.value,
+    a: round ? th : +ui.wid.value / 10, th,
+    round, notch: ui.joint.value === 'notch',
+  };
+}
+
+function makeFactory(P) {
+  const geo = P.round
+    ? new THREE.CylinderGeometry(P.th / 2, P.th / 2, P.L, 14)
+    : new THREE.BoxGeometry(P.a, P.th, P.L);
+  const markGeo = new THREE.BoxGeometry(P.a * 1.06, P.th * 0.5, P.a * 1.06);
+  const markMat = new THREE.MeshStandardMaterial({ color: 0x5a3a1c, roughness: 1 });
+
+  return stick => {
+    const shade = 0.85 + Math.random() * 0.22;
+    const mat = new THREE.MeshStandardMaterial({
+      map: woodTexture, color: new THREE.Color(shade, shade * 0.97, shade * 0.93), roughness: 0.9,
+    });
+    const m = new THREE.Mesh(geo, mat);
+    const { u, v } = stick;
+    const wd = v.clone().cross(u);                    // dirección del ancho
+    m.quaternion.copy(P.round ? basisQuat(v, u, wd) : basisQuat(wd, v, u));
+    m.position.copy(stick.c);
+    m.castShadow = m.receiveShadow = true;
+    const group = [m];
+    for (const mk of stick.markers || []) {
+      const mm = new THREE.Mesh(markGeo, markMat);
+      const mu = V3(0, 0, 1), mwd = mk.v.clone().cross(mu);
+      mm.quaternion.copy(basisQuat(mwd, mk.v, mu));
+      mm.position.copy(mk.c);
+      mm.castShadow = mm.receiveShadow = true;
+      group.push(mm);
+    }
+    return group;
+  };
+}
+
+function updateInfo(extra = '') {
+  const P = readParams();
+  const box = new THREE.Box3().setFromObject(structure);
+  const size = box.getSize(V3());
+  const { sticks, R, D } = layout(P);
+  const ms = sticks.filter(s => s.role === 'M');
+  const luz = Math.abs(ms[ms.length - 1].c.x - ms[0].c.x);
+  ui.info.innerHTML =
+    `Palitos: <b>${P.N * 3 + P.N + 1}</b> (${P.N * 3} rieles + ${P.N + 1} travesaños)<br>` +
+    `Luz entre apoyos: <b>${luz.toFixed(1)} cm</b> · Largo total: <b>${size.x.toFixed(1)} cm</b><br>` +
+    `Altura: <b>${size.y.toFixed(1)} cm</b> · Ancho: <b>${size.z.toFixed(1)} cm</b>` +
+    (extra ? `<br>${extra}` : '');
+}
+
+function frameBridge() {
+  const box = new THREE.Box3().setFromObject(structure);
+  if (box.isEmpty()) return;
+  const size = box.getSize(V3()), center = box.getCenter(V3());
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  const dist = Math.max(size.x, size.y * 1.6, size.z, 8) * 1.35 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * 0.55;
+  controls.target.copy(center);
+  camera.position.copy(center).addScaledVector(dir, dist);
+  controls.update();
+}
+
+function rebuild({ animate = false, frame = false } = {}) {
+  clearStructure();
+  const P = readParams();
+  const { sticks } = layout(P);
+  const make = makeFactory(P);
+
+  if (!animate) {
+    for (const s of sticks) make(s).forEach(o => structure.add(o));
+    updateInfo();
+    if (frame) frameBridge();
+    return;
+  }
+  let i = 0;
+  ui.build.disabled = true;
+  if (frame) { /* encuadre con el puente terminado */
+    const tmp = sticks.map(make); tmp.flat().forEach(o => structure.add(o)); frameBridge();
+    clearStructure(); ui.build.disabled = true;
+  }
+  updateInfo(`Construyendo… 0 / ${sticks.length}`);
+  timer = setInterval(() => {
+    make(sticks[i]).forEach(o => structure.add(o));
+    i++;
+    updateInfo(`Construyendo… ${i} / ${sticks.length}`);
+    if (i >= sticks.length) {
+      clearInterval(timer); timer = null; ui.build.disabled = false;
+      updateInfo('Puente completo.');
+    }
+  }, Math.max(80, Math.min(400, 6000 / sticks.length)));
+}
+
+/* ---------- Eventos ---------- */
+function drawSection() {
+  const P = readParams(), k = 3.8;                    // px por mm
+  const w = P.a * 10 * k, h = P.th * 10 * k, cx = 60, cy = 50;
+  const shape = P.round
+    ? `<circle cx="${cx}" cy="${cy}" r="${w / 2}" fill="#c99d63" stroke="#5a3a1c" stroke-width="1.5"/>`
+    : `<rect x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" fill="#c99d63" stroke="#5a3a1c" stroke-width="1.5"/>`;
+  const dim = P.round
+    ? `<text x="${cx}" y="${cy + 3}" text-anchor="middle" font-size="9" fill="#3a2410">Ø ${(P.th * 10).toFixed(1)}</text>`
+    : `<text x="${cx}" y="${cy - h / 2 - 4}" text-anchor="middle" font-size="9" fill="#f0c36a">${(P.a * 10).toFixed(1)} mm</text>` +
+      `<text x="${cx + w / 2 + 4}" y="${cy + 3}" font-size="9" fill="#f0c36a">${(P.th * 10).toFixed(1)}</text>`;
+  document.getElementById('secSvg').innerHTML = shape + dim;
+}
+function syncLabels() {
+  document.getElementById('linksOut').textContent = ui.links.value;
+  document.getElementById('lenOut').textContent = (+ui.len.value).toFixed(1) + ' cm';
+  const round = ui.shape.value === 'round';
+  ui.thk.hidden = round; ui.wid.hidden = round; ui.dia.hidden = !round;
+  document.getElementById('secVals').textContent = round
+    ? `Diámetro ${(+ui.dia.value).toFixed(1)} mm`
+    : `Ancho ${(+ui.wid.value).toFixed(1)} mm  ×  Grosor ${(+ui.thk.value).toFixed(1)} mm`;
+  drawSection();
+}
+for (const id of ['links', 'len']) ui[id].addEventListener('input', () => { syncLabels(); rebuild({ frame: true }); });
+for (const id of ['wid', 'thk', 'dia']) ui[id].addEventListener('input', () => { syncLabels(); rebuild(); });
+for (const id of ['shape', 'joint']) ui[id].addEventListener('change', () => { syncLabels(); rebuild(); });
+ui.build.addEventListener('click', () => rebuild({ animate: true }));
+ui.frame.addEventListener('click', frameBridge);
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+
+syncLabels();
+rebuild({ frame: true });
+</script>
+
+<!-- Acerca de -->
+<button id="abBtn" type="button" title="Acerca de"><img src="../../assets/logos/Arch_Ram.svg" alt="Arch_Ram" onerror="this.style.display='none'"><span>ℹ️ Acerca de</span></button>
+<div id="abModal" role="dialog" aria-modal="true" aria-labelledby="abTitle">
+  <div id="abCard">
+    <button id="abClose" type="button" aria-label="Cerrar">✕</button>
+    <div class="ab-head">
+      <img src="../../assets/logos/Mixtle_Arch.svg" alt="Mixtle" onerror="this.style.display='none'">
+      <div><h2 id="abTitle">Acerca de la Obra</h2><p class="ab-sub">Maqueta Estepa Mongola · Puente Da Vinci (v1)</p></div>
+    </div>
+    <div class="ab-logos">
+      <img src="../../assets/logos/PC_IEDEP.svg" alt="IEDEP" onerror="this.style.display='none'">
+      <img src="../../assets/logos/Arch_Ram.svg" alt="Arch_Ramon" onerror="this.style.display='none'">
+    </div>
+    <div class="ab-grid">
+      <div class="ab-item"><span class="k">Institución</span><span class="v">Instituto de Educación Digital del Estado de Puebla</span></div>
+      <div class="ab-grid two">
+        <div class="ab-item"><span class="k">Materia</span><span class="v">Diseño Arquitectónico</span></div>
+        <div class="ab-item"><span class="k">Trabajo</span><span class="v">Maqueta Estepa Mongola</span></div>
+      </div>
+      <div class="ab-item"><span class="k">Modelo</span><span class="v">Puente Da Vinci (v1)</span></div>
+      <div class="ab-item"><span class="k">Profesor(a)</span><span class="v">Arq. Claudia Carmen Zárate Herrera</span></div>
+      <div class="ab-item"><span class="k">Autor</span><span class="v">Ramón Cisneros Montero</span><span class="s">Matrícula: 23CL01877</span></div>
+    </div>
+    <button id="abOk" type="button">Cerrar</button>
+    <div style="clear:both"></div>
+  </div>
+</div>
+<script>
+(function () {
+  var m = document.getElementById('abModal');
+  function open() { m.classList.add('open'); }
+  function close() { m.classList.remove('open'); }
+  document.getElementById('abBtn').addEventListener('click', open);
+  document.getElementById('abClose').addEventListener('click', close);
+  document.getElementById('abOk').addEventListener('click', close);
+  m.addEventListener('click', function (e) { if (e.target === m) close(); });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+})();
+</script>
+</body>
+</html>
