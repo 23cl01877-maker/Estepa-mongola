@@ -1,4 +1,4 @@
-﻿# Maqueta Estepa Mongola
+# Maqueta Estepa Mongola
 
 Modelos 3D interactivos (HTML + Three.js) de una maqueta de palillos de madera.
 
@@ -11,6 +11,7 @@ Modelos 3D interactivos (HTML + Three.js) de una maqueta de palillos de madera.
 | Puente de Leonardo (v3) | `Maqueta_Palillos/puente/puente_davinci_v3.html` |
 | Conector tetradecaedro | `Maqueta_Palillos/conector_tetradecaedro.html` |
 | Quiosco hexagonal | `Maqueta_Palillos/quiosco_hexagonal.html` |
+| Modulación arquitectónica | `Modulacion_Arq/planta_modular_corregida.html` |
 
 Más: `Guia_de_uso.pdf` (guía con capturas), `conector_tetradecaedro/` (OpenSCAD y STL del conector), `Maqueta_Quiosco/` (fotos y entrega del quiosco).
 
